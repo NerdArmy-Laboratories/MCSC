@@ -3,8 +3,8 @@ package at.nerdarmy.mcsc.main;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.util.List;
 import java.util.Scanner;
-import java.util.concurrent.TimeUnit;
 
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 import static java.nio.file.StandardOpenOption.WRITE;
@@ -31,6 +31,13 @@ public class Main {
         // Arguments
         String path = "F:\\NewMinecraftServer";
         String version = "1.15.2";
+
+        String seed = null;
+        String spawnProtection = null;
+        String motd = null;
+        String maxPlayers = null;
+        String difficulty = null;
+        String gamemode = null;
 
         File folder = new File(path);
 
@@ -156,14 +163,67 @@ public class Main {
         }
         System.out.println("Server has stopped!");
 
+        // Set right server properties
+        File serverproperties = new File(folder, "server.properties");
+        try {
+            List<String> lines =  Files.readAllLines(serverproperties.toPath());
+            for(String line : lines)
+            {
+                if(line.contains("seed") && seed != null)
+                {
+                    lines.set(lines.indexOf(line), lines.get(lines.indexOf(line)) + seed);
+                }else if(line.contains("protection") && spawnProtection != null)
+                {
+                    lines.set(lines.indexOf(line), line.substring(0,line.indexOf('=')+1) + spawnProtection);
+                }else if(line.contains("motd"))
+                {
+                    if(motd != null)
+                    {
+                        lines.set(lines.indexOf(line), line.substring(0,line.indexOf('=')+1) + motd);
+                    }else
+                    {
+                        lines.set(lines.indexOf(line), line.substring(0,line.indexOf('=')+1) + "Server created with MCSC!");
+                    }
+                }else if(line.contains("players") && maxPlayers != null)
+                {
+                    lines.set(lines.indexOf(line), line.substring(0,line.indexOf('=')+1) + maxPlayers);
+                }else if(line.contains("difficulty") && difficulty != null)
+                {
+                    if(difficulty.equalsIgnoreCase("easy") ||
+                            difficulty.equalsIgnoreCase("hard") ||
+                            difficulty.equalsIgnoreCase("normal") ||
+                            difficulty.equalsIgnoreCase("peaceful"))
+                    {
+                        lines.set(lines.indexOf(line), line.substring(0,line.indexOf('=')+1) + difficulty.toLowerCase());
+                    }else
+                    {
+                        System.out.println("Error: Couldn't set difficulty!");
+                    }
+                }else if(line.contains("gamemode") && gamemode != null)
+                {
+                    if(gamemode.equalsIgnoreCase("survival") ||
+                            gamemode.equalsIgnoreCase("creative") ||
+                            gamemode.equalsIgnoreCase("adventure") ||
+                            gamemode.equalsIgnoreCase("spectator"))
+                    {
+                        lines.set(lines.indexOf(line), line.substring(0,line.indexOf('=')+1) + gamemode.toLowerCase());
+                    }else
+                    {
+                        System.out.println("Error: Couldn't set gamemode!");
+                    }
+                }
+            }
+            System.out.println(lines);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
         // Todo:
         // Install Essentials
         // Disable default commands
-        // Set right server properties
         // Really download spigot jar
 
         File pluginFolder = new File(folder, "plugins");
-        File serverproperties = new File(folder, "server.properties");
         File commandsyml = new File(folder, "commands.yml");
 
         // End Output
