@@ -1,1 +1,8 @@
-[]
+[
+  {
+    "uuid": "38c582e6-6296-4b66-bf45-668f17157254",
+    "name": "Kynics",
+    "level": 4,
+    "bypassesPlayerLimit": false
+  }
+]

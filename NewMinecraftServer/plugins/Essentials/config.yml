@@ -1,0 +1,9 @@
+Configuration:
+  deathchests: true
+  deathmessage: true
+Messages:
+  Prefix: '&6[&fEssentials&6]&f '
+  NoPermission: '&cYou dont have permission!'
+  WrongArguments: '&cThe arguments you entered, were not correct!'
+  JoinMessage: '&6The player &a[PlayerName] &6joined!'
+  QuitMessage: '&6The player &a[PlayerName] &6left!'

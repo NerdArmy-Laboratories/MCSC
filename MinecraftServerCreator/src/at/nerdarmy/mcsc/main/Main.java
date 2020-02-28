@@ -9,13 +9,32 @@ import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 import java.util.stream.Stream;
 
+import at.nerdarmy.mcsc.mcserver.McServer;
+
 import static java.nio.file.StandardOpenOption.WRITE;
 
 public class Main {
+
+    public static void main(String[] args)
+    {
+        McServer mcs = new McServer();
+        mcs.setSeed("-3093782458931373062");
+
+        Path currentRelativePath = Paths.get("");
+        String s = currentRelativePath.toString();
+        System.out.println("Current relative path is: " + s);
+    }
+
+    private static String[] disableCommands = {"bukkit:help", "bukkit:plugins", "bukkit:pl", "bukkit:ver",
+            "bukkit:about", "bukkit:reload", "bukkit:rl", "bukkit:timings", "bukkit:version", "bukkit:?",
+            "help", "plugins", "pl", "ver", "about", "reload", "rl", "timings", "version", "'?'"};
 
     private static void clearFolder(File folder)
     {
@@ -35,8 +54,17 @@ public class Main {
         }
     }
 
-    public static void main(String[] args)
+    private static List<String> disableCommand(String command)
     {
+        List<String> rtn = new ArrayList<>();
+        rtn.add("  "+command+":");
+        rtn.add("  - []");
+        return rtn;
+    }
+
+    public static void mains(String[] args)
+    {
+
         // Arguments
         String path = "D:\\2-Projekte\\MCSC\\NewMinecraftServer";
         String version = "1.15.2";
@@ -87,7 +115,7 @@ public class Main {
             }
         }else
         {
-            if(folder.listFiles().length == 0)
+            if(folder.listFiles().length != 0)
             {
                 System.out.println("The folder you want to create the server in isn't empty!");
                 System.out.print("Delete files [y/N]: ");
@@ -294,9 +322,9 @@ public class Main {
             {
                 essentialsJar.createNewFile();
             }
-            URL url = new URL("https://github.com/NerdArmy-Laboratories/MCSC/raw/master/SpigotJARs/spigot-"+version+".jar");
+            URL url = new URL("https://github.com/NerdArmy-Laboratories/MCSC/raw/master/EssentialsJar/Essentials.jar");
             ReadableByteChannel readableByteChannel = Channels.newChannel(url.openStream());
-            FileOutputStream fileOutputStream = new FileOutputStream(ServerJar);
+            FileOutputStream fileOutputStream = new FileOutputStream(essentialsJar);
             FileChannel fileChannel = fileOutputStream.getChannel();
             fileOutputStream.getChannel().transferFrom(readableByteChannel, 0, Long.MAX_VALUE);
         } catch (Exception e) {
@@ -306,11 +334,37 @@ public class Main {
         }
         System.out.println("Finished downloading.");
 
-
-
-        // Todo:
         // Disable default commands
         File commandsyml = new File(folder, "commands.yml");
+        try {
+            if(!commandsyml.exists())
+            {
+                commandsyml.createNewFile();
+            }
+
+            List<String> lines = Files.readAllLines(commandsyml.toPath());
+            for(String s : disableCommands)
+            {
+                for(String ss : disableCommand(s))
+                {
+                    lines.add(ss);
+                }
+            }
+
+            PrintWriter writer = new PrintWriter(commandsyml.getPath());
+            writer.print("");
+            writer.close();
+
+            String cmd = "";
+            for(String s : lines)
+            {
+                cmd = cmd + s + "\n";
+            }
+            Files.write(commandsyml.toPath(), cmd.getBytes(), WRITE);
+        }catch (Exception e)
+        {
+            e.printStackTrace();
+        }
 
         // End Output
         System.out.println("End");
