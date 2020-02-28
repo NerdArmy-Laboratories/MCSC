@@ -1,12 +1,18 @@
 package at.nerdarmy.mcsc.main;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.net.URL;
+import java.nio.channels.Channels;
+import java.nio.channels.FileChannel;
+import java.nio.channels.ReadableByteChannel;
 import java.nio.file.Files;
 import java.util.List;
 import java.util.Scanner;
+import java.util.stream.Stream;
 
-import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 import static java.nio.file.StandardOpenOption.WRITE;
 
 public class Main {
@@ -21,7 +27,10 @@ public class Main {
                 {
                     clearFolder(f);
                 }
-                f.delete();
+                if(!f.delete())
+                {
+                    System.out.println("Warning: Couldn't delete " + f.getName() + " folder!");
+                }
             }
         }
     }
@@ -29,7 +38,7 @@ public class Main {
     public static void main(String[] args)
     {
         // Arguments
-        String path = "F:\\NewMinecraftServer";
+        String path = "D:\\2-Projekte\\MCSC\\NewMinecraftServer";
         String version = "1.15.2";
 
         String seed = null;
@@ -38,6 +47,32 @@ public class Main {
         String maxPlayers = null;
         String difficulty = null;
         String gamemode = null;
+
+        for(String s : args)
+        {
+            if(s.contains("seed="))
+            {
+                seed = s.replace("seed=","");
+            }else if(s.contains("sp="))
+            {
+                spawnProtection = s.replace("sp=", "");
+            }else if(s.contains("motd="))
+            {
+                motd = s.replace("motd=", "");
+            }else if(s.contains("mp="))
+            {
+                maxPlayers = s.replace("mp=", "");
+            }else if(s.contains("dc="))
+            {
+                difficulty = s.replace("dc=", "");
+            }else if(s.contains("gm="))
+            {
+                gamemode = s.replace("gm=", "");
+            }else
+            {
+                System.out.println("Error: Wrong argument: " + s);
+            }
+        }
 
         File folder = new File(path);
 
@@ -52,7 +87,7 @@ public class Main {
             }
         }else
         {
-            if(folder.listFiles() != null)
+            if(folder.listFiles().length == 0)
             {
                 System.out.println("The folder you want to create the server in isn't empty!");
                 System.out.print("Delete files [y/N]: ");
@@ -60,25 +95,33 @@ public class Main {
                 String in = scan.next();
                 if(in.equalsIgnoreCase("y"))
                 {
-                    System.out.print("Deleting files...");
+                    System.out.println("Deleting files...");
                     clearFolder(folder);
                 }
             }
         }
 
         // Download file
-        File sourceServerJar = new File("F:\\MCSC\\SpigotJARs\\spigot-"+version+".jar");
-
-
-        // Move file into folder
-        File ServerJar = new File(folder, sourceServerJar.getName());
-        try
-        {
-            Files.copy(sourceServerJar.toPath(), ServerJar.toPath(), REPLACE_EXISTING);
-        } catch (Exception e)
-        {
+        // Link: https://hub.spigotmc.org/jenkins/job/BuildTools/lastSuccessfulBuild/artifact/target/BuildTools.jar
+        // Github Link https://github.com/NerdArmy-Laboratories/MCSC/raw/master/SpigotJARs/spigot-1.15.2.jar
+        System.out.println("Starting download of serverjar.");
+        File ServerJar = new File(folder, "spigot-"+version+".jar");
+        try {
+            if(!ServerJar.exists())
+            {
+                ServerJar.createNewFile();
+            }
+            URL url = new URL("https://github.com/NerdArmy-Laboratories/MCSC/raw/master/SpigotJARs/spigot-"+version+".jar");
+            ReadableByteChannel readableByteChannel = Channels.newChannel(url.openStream());
+            FileOutputStream fileOutputStream = new FileOutputStream(ServerJar);
+            FileChannel fileChannel = fileOutputStream.getChannel();
+            fileOutputStream.getChannel().transferFrom(readableByteChannel, 0, Long.MAX_VALUE);
+        } catch (Exception e) {
             e.printStackTrace();
+            System.out.println("Error: Download failed! Please check your internet connection!");
+            return;
         }
+        System.out.println("Finished downloading.");
 
         // Create start file
         if(System.getProperty("os.name").toLowerCase().contains("win"))
@@ -86,15 +129,17 @@ public class Main {
             try
             {
                 File startbat = new File(folder, "start.bat");
-                startbat.createNewFile();
+                if(!startbat.exists())
+                {
+                    startbat.createNewFile();
+                }
                 String content = "java -Xmx4G -jar spigot-" + version + ".jar nogui\npause";
                 Files.write(startbat.toPath(), content.getBytes(), WRITE);
 
             } catch (Exception e)
             {
-
                 e.printStackTrace();
-
+                System.out.println("Warning: Couldn't create start.bat!");
             }
         }else if(System.getProperty("os.name").toLowerCase().contains("nix") ||
                  System.getProperty("os.name").toLowerCase().contains("nux") ||
@@ -107,16 +152,23 @@ public class Main {
 
                 String content = "java -Xmx4G -jar spigot-" + version + ".jar nogui";
 
-                startsh.createNewFile();
+                if(!startsh.exists())
+                {
+                    startsh.createNewFile();
+                }
                 Files.write(startsh.toPath(), content.getBytes(), WRITE);
                 startsh.setExecutable(true);
 
-                startex.createNewFile();
+                if(!startex.exists())
+                {
+                    startex.createNewFile();
+                }
                 Files.write(startex.toPath(), content.getBytes(), WRITE);
                 startex.setExecutable(true);
             } catch (Exception e)
             {
                 e.printStackTrace();
+                System.out.println("Warning: Couldn't create start.sh or start executable!");
             }
         }else
         {
@@ -127,10 +179,23 @@ public class Main {
         // Create the eula.txt file
         try
         {
-            File eula = new File(folder, "eula.txt");
-            String content = "eula=true";
-            eula.createNewFile();
-            Files.write(eula.toPath(), content.getBytes(), WRITE);
+            System.out.print("Dou you agree to the EULA? [y/N]: ");
+            Scanner scan = new Scanner(System.in);
+            String in = scan.next();
+            if(in.equalsIgnoreCase("y"))
+            {
+                File eula = new File(folder, "eula.txt");
+                String content = "eula=true";
+                if(!eula.exists())
+                {
+                    eula.createNewFile();
+                }
+                Files.write(eula.toPath(), content.getBytes(), WRITE);
+            }else
+            {
+                System.out.println("Error: User didn't agree to the EULA!");
+                return;
+            }
         }catch (Exception e)
         {
             e.printStackTrace();
@@ -144,7 +209,6 @@ public class Main {
         {
             Process p = pb.start();
             p.getOutputStream().write("stop".getBytes());
-            p.getOutputStream().close();
             p.getOutputStream().close();
 
             // For some reason this doesn't work.
@@ -177,22 +241,19 @@ public class Main {
                     lines.set(lines.indexOf(line), line.substring(0,line.indexOf('=')+1) + spawnProtection);
                 }else if(line.contains("motd"))
                 {
-                    if(motd != null)
-                    {
-                        lines.set(lines.indexOf(line), line.substring(0,line.indexOf('=')+1) + motd);
-                    }else
+                    if(motd == null)
                     {
                         lines.set(lines.indexOf(line), line.substring(0,line.indexOf('=')+1) + "Server created with MCSC!");
+                    }else
+                    {
+                        lines.set(lines.indexOf(line), line.substring(0,line.indexOf('=')+1) + motd);
                     }
                 }else if(line.contains("players") && maxPlayers != null)
                 {
                     lines.set(lines.indexOf(line), line.substring(0,line.indexOf('=')+1) + maxPlayers);
                 }else if(line.contains("difficulty") && difficulty != null)
                 {
-                    if(difficulty.equalsIgnoreCase("easy") ||
-                            difficulty.equalsIgnoreCase("hard") ||
-                            difficulty.equalsIgnoreCase("normal") ||
-                            difficulty.equalsIgnoreCase("peaceful"))
+                    if(Stream.of("easy", "hard", "normal", "peaceful").anyMatch(difficulty::equalsIgnoreCase))
                     {
                         lines.set(lines.indexOf(line), line.substring(0,line.indexOf('=')+1) + difficulty.toLowerCase());
                     }else
@@ -201,10 +262,7 @@ public class Main {
                     }
                 }else if(line.contains("gamemode") && gamemode != null)
                 {
-                    if(gamemode.equalsIgnoreCase("survival") ||
-                            gamemode.equalsIgnoreCase("creative") ||
-                            gamemode.equalsIgnoreCase("adventure") ||
-                            gamemode.equalsIgnoreCase("spectator"))
+                    if(Stream.of("survival", "creative", "adventure", "spectator").anyMatch(gamemode::equalsIgnoreCase))
                     {
                         lines.set(lines.indexOf(line), line.substring(0,line.indexOf('=')+1) + gamemode.toLowerCase());
                     }else
@@ -213,17 +271,45 @@ public class Main {
                     }
                 }
             }
-            System.out.println(lines);
+
+            PrintWriter writer = new PrintWriter(serverproperties.getPath());
+            writer.print("");
+            writer.close();
+
+            Files.write(serverproperties.toPath(), lines.toString().replace("[","")
+                                                                    .replace("]","")
+                                                                    .replace(", ","\n")
+                                                                    .getBytes(), WRITE);
         } catch (IOException e) {
             e.printStackTrace();
+            System.out.println("Warning: Something went wrong with the server.properties!");
         }
 
-        // Todo:
         // Install Essentials
-        // Disable default commands
-        // Really download spigot jar
-
         File pluginFolder = new File(folder, "plugins");
+        File essentialsJar = new File(pluginFolder, "Essentials.jar");
+        System.out.println("Starting download of Essentials.jar");
+        try {
+            if(!essentialsJar.exists())
+            {
+                essentialsJar.createNewFile();
+            }
+            URL url = new URL("https://github.com/NerdArmy-Laboratories/MCSC/raw/master/SpigotJARs/spigot-"+version+".jar");
+            ReadableByteChannel readableByteChannel = Channels.newChannel(url.openStream());
+            FileOutputStream fileOutputStream = new FileOutputStream(ServerJar);
+            FileChannel fileChannel = fileOutputStream.getChannel();
+            fileOutputStream.getChannel().transferFrom(readableByteChannel, 0, Long.MAX_VALUE);
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.out.println("Error: Download failed! Please check your internet connection!");
+            return;
+        }
+        System.out.println("Finished downloading.");
+
+
+
+        // Todo:
+        // Disable default commands
         File commandsyml = new File(folder, "commands.yml");
 
         // End Output
