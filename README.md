@@ -1,1 +1,1 @@
-# MCSC
+# MinecraftServerCreator
