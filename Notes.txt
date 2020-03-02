@@ -1,1 +1,46 @@
 Seed: -3093782458931373062
+
+mcsc -<c/e/d> <PATH> <arguments>
+
+Default operation:
+	-c: Create
+		Creates the server with the given arguments
+		!!! If you already have a server use -e or the server will be reset !!!
+	-e: Edit
+		Edits the server to fit the given arguments.
+	-sc:
+		Shows the current serverconfig.
+	-d: Delete
+		Deletes the server!
+
+Path:
+	The path to the server
+
+Arguments:
+	-v=<version>:
+		Set's the server version
+	-seed=<seed>:
+		Set's the seed in the server properties.
+	-sp=<spawnProtection>:
+		Set's the radius of the spanw protection.
+	-motd=<MOTD>:
+		Set's the servers MOTD.
+	-mp=<max Players>:
+		Set's the number of maximum players on the server
+	-df=<difficulty>:
+		Set's the servers defautl difficulty.
+		Options: easy, normal, hard, peaceful
+	-gm=<gamemode>:
+		Set's the servers default gamemode.y
+	-rcw:
+		Recreates the world's
+	-instpl=<Link/enabled Plugins>:
+		Install plugin
+		enabled plugins:
+			Essentials
+	-rempl=<Link/enabled Plugins>:
+		Remove plugin
+		enabled plugins:
+			Essentials
+
+
