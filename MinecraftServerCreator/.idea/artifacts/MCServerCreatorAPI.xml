@@ -1,0 +1,8 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="MCServerCreatorAPI">
+    <output-path>$PROJECT_DIR$/out/artifacts/MCServerCreatorAPI</output-path>
+    <root id="archive" name="MCServerCreatorAPI.jar">
+      <element id="dir-copy" path="$PROJECT_DIR$/src/at/nerdarmy/mcsc/mcserver" />
+    </root>
+  </artifact>
+</component>

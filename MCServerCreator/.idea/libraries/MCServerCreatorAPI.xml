@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="MCServerCreatorAPI">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/../MCServerCreatorAPI/out/artifacts/MCServerCreatorAPI/MCServerCreatorAPI.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

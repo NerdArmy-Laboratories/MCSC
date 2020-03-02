@@ -14,4 +14,10 @@ class MCSConstants {
             "https://github.com/NerdArmy-Laboratories/MCSC/raw/master/EssentialsJar/Essentials.jar"
     };
 
+    public static final String[] defaultCommands = {
+            "bukkit:help", "bukkit:plugins", "bukkit:pl", "bukkit:ver", "bukkit:about", "bukkit:reload", "bukkit:rl",
+            "bukkit:timings", "bukkit:version", "bukkit:?", "help", "plugins", "pl", "ver", "about", "reload", "rl",
+            "timings", "version", "'?'"
+    };
+
 }
