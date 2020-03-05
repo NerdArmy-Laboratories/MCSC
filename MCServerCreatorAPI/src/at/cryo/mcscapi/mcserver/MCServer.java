@@ -858,13 +858,18 @@ public class MCServer
 		}
 	}
 
+	public boolean showConfig()
+	{
+		return false;
+	}
+
 
 
 	// +-----------------------------------------------------+
 	// |          Create, update and load methods            |
 	// +-----------------------------------------------------+
 
-	public boolean createServer()
+	public boolean create()
 	{
 		if(!pathCheck(true))
 		{
@@ -913,7 +918,7 @@ public class MCServer
 		//updateServerJar()
 	}
 
-	public boolean loadServer()
+	public boolean load()
 	{
 		if(!pathCheck(false))
 		{
@@ -934,6 +939,10 @@ public class MCServer
 		return true;
 	}
 
+	public boolean delete()
+	{
+		return false;
+	}
 
 
 	// +-----------------------------------------------------+
